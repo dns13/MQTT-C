@@ -571,13 +571,14 @@ ssize_t mqtt_unpack_connack_response (struct mqtt_response *mqtt_response, const
  * 
  * @param[out] mqtt_response the response that is initialized from the contents of \p buf.
  * @param[in] buf the buffer with the incoming data.
+ * @param[in] bufsz the number of bytes available in the buffer.
  * 
  * @relates mqtt_response_publish 
  * 
  * @returns The number of bytes that were consumed, or 0 if the buffer does not contain enough 
  *          bytes to parse the packet, or a negative value if there was a protocol violation.
  */
-ssize_t mqtt_unpack_publish_response (struct mqtt_response *mqtt_response, const uint8_t *buf);
+ssize_t mqtt_unpack_publish_response (struct mqtt_response *mqtt_response, const uint8_t *buf, size_t bufsz);
 
 /**
  * @brief Deserialize a PUBACK/PUBREC/PUBREL/PUBCOMP packet from \p buf.

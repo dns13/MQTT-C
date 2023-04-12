@@ -1340,7 +1340,7 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
     return buf - start;
 }
 
-ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response, const uint8_t *buf)
+ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response, const uint8_t *buf, size_t bufsz)
 {    
     const uint8_t *const start = buf;
     struct mqtt_fixed_header *fixed_header;
@@ -1370,6 +1370,10 @@ ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response, const 
         buf += 2;
     }
 
+    if (buf - start > bufsz) {
+        return MQTT_ERROR_MALFORMED_RESPONSE;
+    }
+
     /* get payload */
     response->application_message = buf;
     if (response->qos_level == 0) {
@@ -1378,6 +1382,10 @@ ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response, const 
         response->application_message_size = fixed_header->remaining_length - response->topic_name_size - 4;
     }
     buf += response->application_message_size;
+
+    if (buf - start > bufsz) {
+        return MQTT_ERROR_MALFORMED_RESPONSE;
+    }
     
     /* return number of bytes consumed */
     return buf - start;
@@ -1709,7 +1717,7 @@ ssize_t mqtt_unpack_response(struct mqtt_response* response, const uint8_t *buf,
             rv = mqtt_unpack_connack_response(response, buf);
             break;
         case MQTT_CONTROL_PUBLISH:
-            rv = mqtt_unpack_publish_response(response, buf);
+            rv = mqtt_unpack_publish_response(response, buf, bufsz - rv);
             break;
         case MQTT_CONTROL_PUBACK:
             rv = mqtt_unpack_pubxxx_response(response, buf);
